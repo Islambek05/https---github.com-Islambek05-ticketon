@@ -20,12 +20,14 @@ function Profile() {
   const [profileSuccessMessage, setProfileSuccessMessage] = useState("");
   const [passwordSuccessMessage, setPasswordSuccessMessage] = useState("");
 
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      navigate("/profile");
+    }
+  }, [navigate]);
+
   const fetchUserData = async () => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
     try {
       const response = await axios.get(
         "http://localhost/ticketon/get_profile.php",
@@ -35,11 +37,9 @@ function Profile() {
           },
         }
       );
-      console.log(response.data);
       setUserData(response.data);
     } catch (error) {
       console.error("Failed to fetch user data", error);
-      navigate("/login");
     }
   };
 
@@ -64,23 +64,22 @@ function Profile() {
   };
 
   const handleProfileSubmit = async (e) => {
-    e.preventDefault();
     setProfileError("");
     setProfileSuccessMessage("");
+    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         "http://localhost/ticketon/update_profile.php",
         userData,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         }
       );
       if (response.data.success) {
         setProfileSuccessMessage(response.data.success);
-        fetchUserData(); // Now this call is valid
       } else {
         setProfileError(response.data.error);
       }
@@ -125,7 +124,6 @@ function Profile() {
   };
 
   const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
     setPasswordError("");
     setPasswordSuccessMessage("");
     if (!validatePasswordForm()) return;
@@ -152,7 +150,7 @@ function Profile() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    window.location.reload();
   };
 
   const confirmDelete = async () => {
@@ -184,7 +182,7 @@ function Profile() {
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-md-center">
+      <div className="d-flex justify-content-center">
         <div className="col-auto">
           <form className="form-signin" onSubmit={handleProfileSubmit}>
             <div className="form-floating mb-3">
@@ -206,7 +204,6 @@ function Profile() {
                 onChange={handleInputChange}
               />
               <label>First Name:</label>
-              <div className="text-danger">{profileError}</div>
             </div>
             <div className="form-floating mb-3">
               <input
@@ -217,7 +214,6 @@ function Profile() {
                 onChange={handleInputChange}
               />
               <label>Last Name:</label>
-              <div className="text-danger">{profileError}</div>
             </div>
             <div className="form-floating mb-3">
               <input
@@ -228,18 +224,25 @@ function Profile() {
                 onChange={handleInputChange}
               />
               <label>Username:</label>
-              <div className="text-danger">{profileError}</div>
             </div>
             <button type="submit" className="btn btn-warning w-100 mb-3">
               Update Profile
             </button>
             {profileSuccessMessage && (
-              <div className="alert alert-success mt-3">
+              <div
+                style={{ width: "208px" }}
+                className="alert alert-success mt-3"
+              >
                 {profileSuccessMessage}
               </div>
             )}
             {profileError && (
-              <div className="alert alert-danger mt-3">{profileError}</div>
+              <div
+                style={{ width: "208px" }}
+                className="alert alert-danger mt-3"
+              >
+                {profileError}
+              </div>
             )}
           </form>
         </div>
@@ -255,7 +258,6 @@ function Profile() {
                 onChange={handlePasswordChange}
               />
               <label>Current Password</label>
-              <div className="text-danger">{passwordError}</div>
             </div>
             <div className="form-floating mb-3">
               <input
@@ -267,7 +269,6 @@ function Profile() {
                 onChange={handlePasswordChange}
               />
               <label>New Password</label>
-              <div className="text-danger">{passwordError}</div>
             </div>
             <div className="form-floating mb-3">
               <input
@@ -279,18 +280,25 @@ function Profile() {
                 onChange={handlePasswordChange}
               />
               <label>Confirm New Password</label>
-              <div className="text-danger">{passwordError}</div>
             </div>
             <button type="submit" className="btn btn-warning w-100 mb-3">
               Update Password
             </button>
             {passwordSuccessMessage && (
-              <div className="alert alert-success mt-3">
+              <div
+                style={{ width: "208px" }}
+                className="alert alert-success mt-3"
+              >
                 {passwordSuccessMessage}
               </div>
             )}
             {passwordError && (
-              <div className="alert alert-danger mt-3">{passwordError}</div>
+              <div
+                style={{ width: "208px" }}
+                className="alert alert-danger mt-3"
+              >
+                {passwordError}
+              </div>
             )}
           </form>
           <button

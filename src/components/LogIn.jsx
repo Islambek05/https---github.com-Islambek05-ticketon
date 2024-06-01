@@ -29,7 +29,7 @@ function Login() {
         if (response.data.success) {
           localStorage.setItem("token", response.data.token);
           setSuccessMessage("Login successful!");
-          navigate("/profile");
+          window.location.reload();
         } else {
           setError(response.data.error);
         }
@@ -53,7 +53,7 @@ function Login() {
 
   return (
     <div className="container mt-5">
-      <div className="form-signin w-100 m-auto">
+      <main className="form-signin w-100 m-auto">
         <form onSubmit={handleLogin}>
           <h1 className="h3 mb-3 fw-normal">Please Log In</h1>
           <div className="form-floating mb-3">
@@ -99,7 +99,7 @@ function Login() {
             Log in
           </button>
         </form>
-      </div>
+      </main>
     </div>
   );
 }
