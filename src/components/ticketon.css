@@ -1,0 +1,15 @@
+.form-signin {
+  max-width: 330px;
+  padding: 1rem;
+}
+.card-img-info {
+  max-width: 350px;
+  height: auto;
+}
+.card-img {
+  max-width: 100%;
+  height: auto;
+}
+.event-card {
+  margin-bottom: 20px;
+}
