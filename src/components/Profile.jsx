@@ -21,10 +21,14 @@ function Profile() {
   const [passwordSuccessMessage, setPasswordSuccessMessage] = useState("");
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
-      navigate("/profile");
+    if (!localStorage.getItem("token")) {
+      navigate("/login");
     }
-  }, [navigate]);
+  }, []);
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
 
   const fetchUserData = async () => {
     const token = localStorage.getItem("token");
@@ -43,10 +47,6 @@ function Profile() {
     }
   };
 
-  useEffect(() => {
-    fetchUserData();
-  }, []);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserData((prevState) => ({
@@ -64,6 +64,7 @@ function Profile() {
   };
 
   const handleProfileSubmit = async (e) => {
+    e.preventDefault();
     setProfileError("");
     setProfileSuccessMessage("");
     const token = localStorage.getItem("token");
@@ -124,6 +125,7 @@ function Profile() {
   };
 
   const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
     setPasswordError("");
     setPasswordSuccessMessage("");
     if (!validatePasswordForm()) return;
@@ -150,6 +152,7 @@ function Profile() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    navigate("/");
     window.location.reload();
   };
 
