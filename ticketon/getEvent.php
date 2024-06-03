@@ -1,33 +1,33 @@
 <?php
-header('Access-Control-Allow-Origin: http://localhost:3000'); // Specify your front-end origin here for better security
+header('Access-Control-Allow-Origin: http://localhost:3000');
 header('Access-Control-Allow-Methods: GET');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 header('Content-Type: application/json');
 
 require_once 'Database.php';
-$event = new Event(); // Ensure the Event class has the method 'getEventByID'
+$user = new User();
+$event = new Event();
 
-function handleError($message) {
-    http_response_code(404); // Send appropriate status code
-    echo json_encode(['error' => $message]);
-    exit();
-}
-
-// Get eventID from the URL parameters
-$eventID = isset($_GET['eventID']) ? $_GET['eventID'] : null;
+$eventID = filter_input(INPUT_GET, 'eventID', FILTER_VALIDATE_INT);
 
 if (!$eventID) {
-    handleError("Event ID is required");
+    handleError("Event ID is required", 400);
 }
 
 try {
-    $eventData = $event->getEventID($eventID); // Assume this method exists and fetches data correctly
+    $eventData = $event->getEventID($eventID);
     if (!$eventData) {
-        handleError("Event not found");
+        handleError("Event not found", 404);
     } else {
-        echo json_encode($eventData); // Output the event data as JSON
+        echo json_encode($eventData);
     }
 } catch (Exception $e) {
-    handleError("Database error: " . $e->getMessage());
+    handleError("Database error: " . $e->getMessage(), 500);
+}
+
+function handleError($message, $code = 400) {
+    http_response_code($code);
+    echo json_encode(['error' => $message]);
+    exit();
 }
 ?>

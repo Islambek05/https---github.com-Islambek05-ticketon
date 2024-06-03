@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 
 function EventDetails() {
   const location = useLocation();
+  const eventID = new URLSearchParams(location.search).get("eventID");
   const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [userData, setUserData] = useState(null);
@@ -12,12 +13,11 @@ function EventDetails() {
   useEffect(() => {
     const fetchUserData = async () => {
       const token = localStorage.getItem("token");
+      if (!token) return;
       try {
         const response = await axios.get(
           "http://localhost/ticketon/get_profile.php",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         setUserData(response.data);
       } catch (error) {
@@ -26,38 +26,43 @@ function EventDetails() {
       }
     };
 
-    const fetchEvent = async () => {
-      const eventID = new URLSearchParams(location.search).get("eventID");
-      console.log(eventID);
-      if (!eventID) {
-        setError("Event not specified");
-        return;
-      }
+    if (eventID) {
+      fetchUserData();
+      fetchEvent(eventID);
+    } else {
+      setError("Event not specified");
+    }
+  }, [eventID]);
 
-      try {
-        const response = await axios.get(
-          `http://localhost/ticketon/getEvent.php`,
-          {
-            params: { eventID },
-          }
-        );
-        setEvent(response.data);
-      } catch (error) {
-        console.error("Failed to fetch event:", error);
-        setError("Failed to load event.");
-      }
-    };
-
-    fetchUserData();
-    fetchEvent();
-  }, [eventID, navigate]);
+  const fetchEvent = async (eventID) => {
+    const token = localStorage.getItem("token");
+    try {
+      const url =
+        userData && userData.userRole === "organizer"
+          ? `http://localhost/ticketon/getOrgEvent.php?eventID=${eventID}`
+          : `http://localhost/ticketon/getEvent.php?eventID=${eventID}`;
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEvent(response.data);
+    } catch (error) {
+      console.error("Failed to fetch event:", error);
+      setError("Failed to load event.");
+    }
+  };
 
   const handleBuyTickets = async (numberOfTickets) => {
+    const token = localStorage.getItem("token");
+    if (!userData) {
+      navigate("/login");
+      return;
+    }
     try {
-      await axios.post(`http://localhost/ticketon/api/buy_tickets.php`, {
-        eventID,
-        numberOfTickets,
-      });
+      await axios.post(
+        `http://localhost/ticketon/api/buy_tickets.php`,
+        { eventID, numberOfTickets },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       navigate("/success");
     } catch (error) {
       console.error("Failed to buy tickets:", error);
@@ -96,21 +101,23 @@ function EventDetails() {
             <strong>Description:</strong> {event.Description}
           </p>
           {userData &&
-            (userData.userRole === "organizer" ||
+            ((userData.userRole === "organizer" &&
+              userData.userName === event.Organizer) ||
               userData.userRole === "admin") && (
               <>
-                <a
-                  href={`/edit_event/${event.eventID}`}
-                  className="btn btn-warning"
+                <Link
+                  to={`/EditEvent?eventID=${event.EventID}`}
+                  className="btn btn-warning mb-3"
                 >
-                  Change
-                </a>
-                <a
-                  href={`/event_ticket/${event.eventID}`}
+                  Edit
+                </Link>
+                <br />
+                <Link
+                  to={`/event_ticket/${event.EventID}`}
                   className="btn btn-warning"
                 >
                   Info
-                </a>
+                </Link>
               </>
             )}
           {userData &&

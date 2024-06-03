@@ -145,8 +145,24 @@ class Event extends Database {
     }
   }
 
-  function getAllEvents() {
-    $stmt = $this->conn->query("SELECT EventID, EventName, EventDate, EventPoster FROM events");
+  public function getAllEvents() {
+    $query = "SELECT * FROM events";
+    $stmt = $this->conn->prepare($query);
+    $stmt->execute();
+    $events = [];
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      if (!empty($row['EventPoster'])) {
+        $row['EventPoster'] = base64_encode($row['EventPoster']);
+      }
+      $events[] = $row;
+    }
+    return $events;
+  }
+
+  public function getOrgEvents($username) {
+    $stmt = $this->conn->prepare("SELECT * FROM events WHERE Organizer = :Username");
+    $stmt->bindParam(':Username', $username);
+    $stmt->execute();
     $events = [];
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
       if ($row['EventPoster']) {
@@ -164,20 +180,26 @@ class Event extends Database {
     if (!$stmt->execute()) {
       throw new Exception("Error executing the query");
     }
-    return $stmt->fetch();
+    $event = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($event && isset($event['EventPoster']) && !empty($event['EventPoster'])) {
+      $event['EventPoster'] = base64_encode($event['EventPoster']);
+    }
+    return $event;
   }
 
-  public function getOrgEvents($username) {
-    $stmt = $this->conn->query("SELECT * FROM events WHERE Organizer = :Username");
-    $stmt->bindParam(':Username', $username);
-    $events = [];
-    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-      if ($row['EventPoster']) {
-        $row['EventPoster'] = base64_encode($row['EventPoster']);
-      }
-      $events[] = $row;
+  public function getOrgEventID($eventID, $organizer) {
+    $query = "SELECT * FROM events WHERE EventID = :eventID AND Organizer = :Organizer";
+    $stmt = $this->conn->prepare($query);
+    $stmt->bindParam(":eventID", $eventID);
+    $stmt->bindParam(':Organizer', $organizer);
+    if (!$stmt->execute()) {
+      throw new Exception("Error executing the query");
     }
-    return $events;
+    $event = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($event && isset($event['EventPoster']) && !empty($event['EventPoster'])) {
+      $event['EventPoster'] = base64_encode($event['EventPoster']);
+    }
+    return $event;
   }
 
   public function addEvent($eventName, $eventDate, $eventTime, $eventTickets, $location, $description, $eventPoster, $organizer) {

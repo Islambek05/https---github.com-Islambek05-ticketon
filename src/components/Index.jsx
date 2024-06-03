@@ -21,7 +21,7 @@ function Index() {
     }
     fetchUserData();
     allEvents();
-  }, []);
+  });
 
   const fetchUserData = async () => {
     const token = localStorage.getItem("token");
@@ -43,21 +43,42 @@ function Index() {
   };
 
   const allEvents = async () => {
-    try {
-      const response = await axios.post(
-        `http://localhost/ticketon/getAllEvents.php`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+    const token = localStorage.getItem("token");
+    if (userData.userRole === "organizer") {
+      try {
+        const response = await axios.get(
+          `http://localhost/ticketon/getOrgEvents.php`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (response.data) {
+          setEvents(response.data);
         }
-      );
-      if (response.data) {
-        setEvents(response.data);
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+        setEvents(null);
       }
-    } catch (error) {
-      console.error("Failed to fetch events:", error);
-      setEvents(null);
+    } else {
+      try {
+        const response = await axios.post(
+          `http://localhost/ticketon/getAllEvents.php`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (response.data) {
+          setEvents(response.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+        setEvents(null);
+      }
     }
   };
 

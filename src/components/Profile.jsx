@@ -9,6 +9,7 @@ function Profile() {
     firstName: "",
     lastName: "",
     userName: "",
+    userRole: "",
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -24,9 +25,6 @@ function Profile() {
     if (!localStorage.getItem("token")) {
       navigate("/login");
     }
-  }, []);
-
-  useEffect(() => {
     fetchUserData();
   }, []);
 

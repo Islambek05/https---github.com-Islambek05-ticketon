@@ -10,7 +10,7 @@ function IndexAdm({ events }) {
           <div className="col-sm-5 col-lg-3 mb-4" key={event.EventID}>
             <div className="card event-card">
               <a
-                href={`EventInformation.php?eventID=${encodeURIComponent(
+                href={`EventInformation?eventID=${encodeURIComponent(
                   event.EventID
                 )}`}
               >
