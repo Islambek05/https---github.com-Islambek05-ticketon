@@ -64,13 +64,12 @@ function Header() {
   return (
     <header className="p-2 sticky-top bg-light">
       <div className="container d-flex align-items-center justify-content-around">
-        <a href="/">{/* Placeholder for logo */}</a>
         <form style={{ width: "55%" }} onSubmit={handleSearch}>
           <div className="input-group">
             <input
               type="text"
               className="form-control"
-              placeholder={`Find among ${totalEvents} events`}
+              placeholder={`Find events`}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -90,6 +89,9 @@ function Header() {
               </a>
             </>
           ))}
+        <a href="/" className="btn btn-warning">
+          Home
+        </a>
         {!userData.userName ? (
           <button
             className="btn btn-warning"
